@@ -35,7 +35,8 @@ int main(int argc, char** argv)
 			return 1;
 		}
 		printf("Opening lightstone %d\n", i + 1);
-		while(1)//for(j = 0; j < 10; ++j)
+		printf("Getting first 10 HRV/SCL pairs:\n");
+		for(j = 0; j < 10; ++j)
 		{
 			r = lightstone_get_info(test);
 			if(r.hrv < 0) 
@@ -45,6 +46,8 @@ int main(int argc, char** argv)
 			}
 			printf ("%f %f\n", r.hrv, r.scl);
 		}
+		printf("Getting serial string ...\n");
+		printf("Serial: %s\n", lightstone_get_serial(test));
 		printf("Closed lightstone %d\n", i + 1);
 	}
 	lightstone_delete(test);
