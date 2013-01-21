@@ -35,6 +35,18 @@ LIGHTSTONE_DECLSPEC int lightstone_valid(lightstone* d)
 	return d->_is_open;
 }
 
+void lightstone_get_key(char *dest, char *src)
+{
+	while (*++src != '>');
+	src++;
+	while (*src != '<')
+	{
+		*dest = *src++;
+		dest++;
+	}
+	dest = '\0';
+}
+
 LIGHTSTONE_DECLSPEC lightstone_info lightstone_get_info(lightstone* dev)
 {
 	lightstone_info ret;
@@ -69,7 +81,13 @@ LIGHTSTONE_DECLSPEC lightstone_info lightstone_get_info(lightstone* dev)
 						rawAscii[char_count] = 0;
 						if ( strlen(rawAscii) > 18) 
 						{
-							// We want read only row which begins with '<R'
+							if (!dev->_is_serial_loaded && rawAscii[1] == 'S')
+							{
+								lightstone_get_key(dev->_serial, rawAscii);
+								dev->_is_serial_loaded = 1;
+							}
+
+							// We want read row which begins with '<ROW'
 							if (rawAscii[1] == 'R')
 							{
 								ret.scl = ((float)(((hex2dec(rawAscii+5,2)) << 8) | (hex2dec(rawAscii+7,2)))) * .01;
@@ -85,4 +103,15 @@ LIGHTSTONE_DECLSPEC lightstone_info lightstone_get_info(lightstone* dev)
 		}
 	}
 	return ret;
+}
+
+LIGHTSTONE_DECLSPEC const char* lightstone_get_serial(lightstone* dev)
+{
+	if (!lightstone_valid(dev))
+		return NULL;
+
+	while (!dev->_is_serial_loaded)
+		lightstone_get_info(dev);
+
+	return dev->_serial;
 }
