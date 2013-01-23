@@ -288,6 +288,7 @@ LIGHTSTONE_DECLSPEC lightstone* lightstone_create()
 	s->_is_open = 0;
 	s->_is_inited = 0;
 	s->_is_serial_loaded = 0;
+	s->_is_version_loaded = 0;
 	return s;   
 }
 

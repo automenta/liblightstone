@@ -35,7 +35,7 @@ LIGHTSTONE_DECLSPEC int lightstone_valid(lightstone* d)
 	return d->_is_open;
 }
 
-void lightstone_get_key(char *dest, char *src)
+void lightstone_get_val(char *dest, char *src)
 {
 	while (*++src != '>');
 	src++;
@@ -79,22 +79,30 @@ LIGHTSTONE_DECLSPEC lightstone_info lightstone_get_info(lightstone* dev)
 					else if ( InputReport[ii] == 13 ) 
 					{
 						rawAscii[char_count] = 0;
-						if ( strlen(rawAscii) > 18) 
-						{
-							if (!dev->_is_serial_loaded && rawAscii[1] == 'S')
-							{
-								lightstone_get_key(dev->_serial, rawAscii);
-								dev->_is_serial_loaded = 1;
-							}
+						switch (rawAscii[1]) {
+							case 'V':
+								if (!dev->_is_version_loaded) {
+									lightstone_get_val(dev->_version, rawAscii);
+									dev->_is_version_loaded = 1;
+								}
+								break;
 
-							// We want read row which begins with '<ROW'
-							if (rawAscii[1] == 'R')
-							{
+							case 'S':
+								if (!dev->_is_serial_loaded && rawAscii[2] == 'E') {
+									lightstone_get_val(dev->_serial, rawAscii);
+									dev->_is_serial_loaded = 1;
+								}
+								break;
+
+							case 'R': // We want read row which begins with '<ROW'
 								ret.scl = ((float)(((hex2dec(rawAscii+5,2)) << 8) | (hex2dec(rawAscii+7,2)))) * .01;
 								ret.hrv = ((float)(((hex2dec(rawAscii+10,2)) << 8) | (hex2dec(rawAscii+12,2)))) * .001;
 								return ret;
-							}
-						}
+
+							default:
+								break;
+						};
+
 						message_started = 0;
 						char_count = 0;
 					}
@@ -114,4 +122,15 @@ LIGHTSTONE_DECLSPEC const char* lightstone_get_serial(lightstone* dev)
 		lightstone_get_info(dev);
 
 	return dev->_serial;
+}
+
+LIGHTSTONE_DECLSPEC const char* lightstone_get_version(lightstone* dev)
+{
+	if (!lightstone_valid(dev))
+		return NULL;
+
+	while (!dev->_is_version_loaded)
+		lightstone_get_info(dev);
+
+	return dev->_version;
 }

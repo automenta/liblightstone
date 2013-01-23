@@ -59,6 +59,7 @@ The messages that the device sends looks like
 - <RAW>AABB CCDD<\RAW>
 - <SER>XXXXXXXX<\SER>
 - <VER>XXXX<\VER>
+- <SPI>YYYY<\SPI>
 
 VER and SER messages identify the hardware. The RAW packet contains the HRV and SCL information, in the following format:
 
@@ -106,6 +107,8 @@ Core communications functions to open/close/read from the lightstone
 
 /// The lenght of the serial string (8 chars + '\0')
 #define LIGHTSTONE_SERIAL_LEN 9
+/// The lenght of the version string (4 chars + '\0')
+#define LIGHTSTONE_VERSION_LEN 5
 
 #if defined(WIN32)
 #if defined(LIGHTSTONE_DYNAMIC)
@@ -134,6 +137,10 @@ typedef struct {
 	int _is_serial_loaded;
 	/// device serial string
 	char _serial[LIGHTSTONE_SERIAL_LEN];
+	///	0 if version string is not loaded yet, > 0 otherwise
+	int _is_version_loaded;
+	/// device version string
+	char _version[LIGHTSTONE_VERSION_LEN];
 } lightstone;
 #else //Non-Win32 platforms
 #define LIGHTSTONE_DECLSPEC
@@ -161,6 +168,10 @@ typedef struct {
 	int _is_serial_loaded;
 	/// device serial string
 	char _serial[LIGHTSTONE_SERIAL_LEN];
+	///	0 if version string is not loaded yet, > 0 otherwise
+	int _is_version_loaded;
+	/// device version string
+	char _version[LIGHTSTONE_VERSION_LEN];
 } lightstone;
 #endif
 
@@ -265,19 +276,19 @@ extern "C" {
 	int lightstone_read(lightstone* dev, unsigned char *report);
 
 	/**
-	 * Internal function used to get serial string from packet data.
+	 * Internal function used to get value from packet data.
 	 *
 	 * Example:
 	 * Packet data (src): <SER>00069432<\SER>
 	 * Function gets (dst) with ending null char: 00069432\0
 	 *
-	 * Be carefull, dest must be of size 9 (eight chars and null char)
+	 * Be carefull, dest must be of correct size!
 	 *
-	 * @param dest Destination buffer for parsed serial string
+	 * @param dest Destination buffer for parsed value
 	 * @param src Source buffer to parse
 	 * @return void
 	 */
-	void lightstone_get_key(char *dest, char *src);
+	void lightstone_get_val(char *dest, char *src);
 
 	/**
 	 * Retreive a single HRV/SCL pair from the device. Blocks until
@@ -293,7 +304,7 @@ extern "C" {
 	LIGHTSTONE_DECLSPEC lightstone_info lightstone_get_info(lightstone* dev);
 
 	/**
-	 * Retreive a serial number from the device. If the serial was't loaded by
+	 * Retreive a serial string from the device. If the serial was't loaded by
 	 * lightstone_get_info yet, it calls lightstone_get_info and blocks until
 	 * a serial is retrived.
 	 *
@@ -302,9 +313,20 @@ extern "C" {
 	 *
 	 * @param dev Initialized and opened device
 	 * @return If there is some error, NULL is returned otherwise it returns
-	 *		   serial string
+	 *         serial string
 	 */
 	LIGHTSTONE_DECLSPEC const char* lightstone_get_serial(lightstone* dev);
+
+	/**
+	 * Retreive a version string from the device. 
+	 * Works same like lightstone_get_serial().
+	 *
+	 * @see lightstone_get_serial
+	 * @param dev Initialized and opened device
+	 * @return If there is some error, NULL is returned otherwise it returns
+	 *         version string
+	 */
+	LIGHTSTONE_DECLSPEC const char* lightstone_get_version(lightstone* dev);
 
 #ifdef __cplusplus
 }

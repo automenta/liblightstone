@@ -48,6 +48,10 @@ int main(int argc, char** argv)
 		}
 		printf("Getting serial string ...\n");
 		printf("Serial: %s\n", lightstone_get_serial(test));
+
+		printf("Getting version string ...\n");
+		printf("Version: %s\n", lightstone_get_version(test));
+
 		printf("Closed lightstone %d\n", i + 1);
 	}
 	lightstone_delete(test);
