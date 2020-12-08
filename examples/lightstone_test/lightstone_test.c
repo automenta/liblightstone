@@ -35,9 +35,7 @@ int main(int argc, char** argv)
 			return 1;
 		}
 		printf("Opening lightstone %d\n", i + 1);
-		printf("Getting first 10 HRV/SCL pairs:\n");
-		for(j = 0; j < 10; ++j)
-		{
+		for(j = 0; j < 1000; ++j)		{
 			r = lightstone_get_info(test);
 			if(r.hrv < 0) 
 			{

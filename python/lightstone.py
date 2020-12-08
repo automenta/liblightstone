@@ -51,7 +51,7 @@ class lightstone(object):
             sys.stderr.write("hid_close failed with return code %d.\n" % ret)
             return False
         hid_cleanup()
-	return True
+        return True
     
     def get_data(self):
         ret = 0
